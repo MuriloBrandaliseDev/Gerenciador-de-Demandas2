@@ -1,0 +1,26 @@
+{
+  "name": "gerenciador-demandas",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Gerenciador de demandas com Kanban",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:client": "npm run dev --prefix client",
+    "dev:server": "node --watch server/index.js",
+    "build": "npm run build --prefix client",
+    "start": "node server/index.js",
+    "postinstall": "npm install --prefix client"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "uuid": "^11.0.5"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}

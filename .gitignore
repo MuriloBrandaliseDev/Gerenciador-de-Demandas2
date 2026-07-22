@@ -1,0 +1,13 @@
+node_modules/
+client/node_modules/
+client/dist/
+data/*.db
+data/*.db-*
+data/*.db-wal
+data/*.db-shm
+.DS_Store
+*.log
+.env
+.vscode/
+.idea/
+*.local
