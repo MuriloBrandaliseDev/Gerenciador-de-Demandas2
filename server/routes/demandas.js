@@ -157,7 +157,7 @@ router.get('/anexos/:anexoId/arquivo', (req, res) => {
     'Content-Disposition',
     `inline; filename*=UTF-8''${encodeURIComponent(row.nome_original)}`
   );
-  res.sendFile(full);
+  return res.sendFile(path.resolve(full));
 });
 
 router.get('/:id', (req, res) => {

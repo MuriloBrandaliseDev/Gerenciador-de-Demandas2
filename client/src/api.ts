@@ -1,13 +1,19 @@
 import type { Anexo, Demanda, DemandaInput, Filters } from './types';
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = { ...(options?.headers as Record<string, string>) };
+  // Só força JSON quando há body (evita atrapalhar uploads multipart)
+  if (options?.body && !(options.body instanceof FormData)) {
+    headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+  }
+
   const res = await fetch(url, {
-    headers: { 'Content-Type': 'application/json', ...(options?.headers || {}) },
     ...options,
+    headers,
   });
 
   if (!res.ok) {
-    let message = 'Erro na requisição';
+    let message = `Erro na requisição (${res.status})`;
     try {
       const data = await res.json();
       message = data.error || message;
@@ -70,12 +76,17 @@ export const api = {
       body: form,
     });
     if (!res.ok) {
-      let message = 'Erro no upload';
+      let message = `Falha no upload (${res.status})`;
       try {
         const data = await res.json();
         message = data.error || message;
       } catch {
-        /* ignore */
+        try {
+          const text = await res.text();
+          if (text) message = text.slice(0, 160);
+        } catch {
+          /* ignore */
+        }
       }
       throw new Error(message);
     }

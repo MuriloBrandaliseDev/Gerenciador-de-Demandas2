@@ -1458,6 +1458,23 @@ a {
   color: #93c5fd;
 }
 
+.anexos-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.74rem;
+  color: #93c5fd;
+  background: var(--blue-soft);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 7px;
+  padding: 7px 9px;
+}
+
+.anexo-item.pending {
+  border-style: dashed;
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
 .anexos-error {
   font-size: 0.78rem;
   color: #fca5a5;

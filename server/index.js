@@ -18,6 +18,10 @@ app.get('/api/health', (_req, res) => {
 
 app.use('/api/demandas', demandasRouter);
 
+app.use('/api', (_req, res) => {
+  res.status(404).json({ error: 'Rota da API não encontrada' });
+});
+
 const clientDist = path.join(__dirname, '..', 'client', 'dist');
 app.use(express.static(clientDist));
 app.get('*', (req, res, next) => {

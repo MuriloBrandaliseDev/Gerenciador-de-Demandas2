@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   X,
   Save,
@@ -15,7 +15,7 @@ import { RichEditor } from './RichEditor';
 import { Select } from './Select';
 import { DatePicker } from './DatePicker';
 import { ConfirmDialog } from './ConfirmDialog';
-import { AnexosSection } from './AnexosSection';
+import { AnexosSection, type AnexosHandle } from './AnexosSection';
 
 const STATUS_OPTIONS = STATUS_ORDER.map((s) => ({
   value: s,
@@ -50,6 +50,7 @@ export function DemandaModal({
   const [data, setData] = useState(today());
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const anexosRef = useRef<AnexosHandle>(null);
 
   useEffect(() => {
     if (!open) {
@@ -96,11 +97,11 @@ export function DemandaModal({
         },
         demanda?.id
       );
-      // Nova demanda: mantém aberto para anexar; edição: fecha
-      if (demanda?.id) onClose();
-      else if (saved) {
-        // parent atualiza `demanda` prop; modal permanece
+      const id = demanda?.id || saved?.id;
+      if (id && anexosRef.current && anexosRef.current.getPendingCount() > 0) {
+        await anexosRef.current.flushToDemanda(id);
       }
+      onClose();
     } finally {
       setSaving(false);
     }
@@ -182,6 +183,7 @@ export function DemandaModal({
           </div>
 
           <AnexosSection
+            ref={anexosRef}
             demandaId={demanda?.id ?? null}
             onCountChange={(count) => {
               if (demanda?.id) onAnexosChange?.(demanda.id, count);
