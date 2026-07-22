@@ -5,9 +5,11 @@ data/*.db
 data/*.db-*
 data/*.db-wal
 data/*.db-shm
+data/uploads/
 .DS_Store
 *.log
 .env
 .vscode/
 .idea/
 *.local
+tmp-test.png
