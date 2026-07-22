@@ -70,20 +70,23 @@ export default function App() {
       if (id) {
         const updated = await api.update(id, data);
         setDemandas((prev) => prev.map((d) => (d.id === id ? updated : d)));
+        setEditing(updated);
         toast(
           'updated',
           'Demanda atualizada com sucesso',
           `"${updated.titulo}" foi salva no board.`
         );
-      } else {
-        const created = await api.create(data);
-        setDemandas((prev) => [...prev, created]);
-        toast(
-          'created',
-          'Demanda criada com sucesso',
-          `"${created.titulo}" entrou na coluna ${created.status === 'novo' ? 'Novo' : 'selecionada'}.`
-        );
+        return updated;
       }
+      const created = await api.create(data);
+      setDemandas((prev) => [...prev, created]);
+      setEditing(created);
+      toast(
+        'created',
+        'Demanda criada com sucesso',
+        `"${created.titulo}" salva. Agora você pode anexar arquivos.`
+      );
+      return created;
     } catch (err) {
       toast('error', 'Não foi possível salvar', err instanceof Error ? err.message : undefined);
       throw err;
@@ -185,6 +188,12 @@ export default function App() {
         onClose={() => setModalOpen(false)}
         onSave={handleSave}
         onDelete={handleDelete}
+        onAnexosChange={(id, count) => {
+          setDemandas((prev) =>
+            prev.map((d) => (d.id === id ? { ...d, anexosCount: count } : d))
+          );
+          setEditing((prev) => (prev?.id === id ? { ...prev, anexosCount: count } : prev));
+        }}
       />
 
       <ToastStack items={toasts} onDismiss={dismissToast} />

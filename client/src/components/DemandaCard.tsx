@@ -1,6 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { CalendarDays, Clock3, GripVertical } from 'lucide-react';
+import { CalendarDays, Clock3, GripVertical, Paperclip } from 'lucide-react';
 import type { Demanda } from '../types';
 
 interface DemandaCardProps {
@@ -49,6 +49,12 @@ export function DemandaCard({ demanda, onOpen }: DemandaCardProps) {
           <CalendarDays />
           {formatDate(demanda.dataReferencia)}
         </span>
+        {(demanda.anexosCount ?? 0) > 0 && (
+          <span className="meta-chip">
+            <Paperclip />
+            {demanda.anexosCount}
+          </span>
+        )}
       </div>
     </article>
   );

@@ -15,6 +15,17 @@ export interface Demanda {
   ordem: number;
   createdAt: string;
   updatedAt: string;
+  anexosCount?: number;
+}
+
+export interface Anexo {
+  id: string;
+  demandaId: string;
+  nomeOriginal: string;
+  mimeType: string;
+  tamanho: number;
+  createdAt: string;
+  url: string;
 }
 
 export interface DemandaInput {

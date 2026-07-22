@@ -15,6 +15,7 @@ import { RichEditor } from './RichEditor';
 import { Select } from './Select';
 import { DatePicker } from './DatePicker';
 import { ConfirmDialog } from './ConfirmDialog';
+import { AnexosSection } from './AnexosSection';
 
 const STATUS_OPTIONS = STATUS_ORDER.map((s) => ({
   value: s,
@@ -25,8 +26,9 @@ interface DemandaModalProps {
   open: boolean;
   demanda: Demanda | null;
   onClose: () => void;
-  onSave: (data: DemandaInput, id?: string) => Promise<void>;
+  onSave: (data: DemandaInput, id?: string) => Promise<Demanda | void>;
   onDelete?: (id: string) => Promise<void>;
+  onAnexosChange?: (demandaId: string, count: number) => void;
 }
 
 function today() {
@@ -39,6 +41,7 @@ export function DemandaModal({
   onClose,
   onSave,
   onDelete,
+  onAnexosChange,
 }: DemandaModalProps) {
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
@@ -83,7 +86,7 @@ export function DemandaModal({
     if (!titulo.trim()) return;
     setSaving(true);
     try {
-      await onSave(
+      const saved = await onSave(
         {
           titulo: titulo.trim(),
           descricao,
@@ -93,7 +96,11 @@ export function DemandaModal({
         },
         demanda?.id
       );
-      onClose();
+      // Nova demanda: mantém aberto para anexar; edição: fecha
+      if (demanda?.id) onClose();
+      else if (saved) {
+        // parent atualiza `demanda` prop; modal permanece
+      }
     } finally {
       setSaving(false);
     }
@@ -166,14 +173,21 @@ export function DemandaModal({
                   onChange={(e) => setHoras(e.target.value)}
                 />
               </div>
-              <div className="field">
-                <label>
-                  <CalendarDays size={12} /> Data
-                </label>
-                <DatePicker value={data} onChange={setData} />
-              </div>
+            <div className="field">
+              <label>
+                <CalendarDays size={12} /> Data
+              </label>
+              <DatePicker value={data} onChange={setData} />
             </div>
           </div>
+
+          <AnexosSection
+            demandaId={demanda?.id ?? null}
+            onCountChange={(count) => {
+              if (demanda?.id) onAnexosChange?.(demanda.id, count);
+            }}
+          />
+        </div>
 
           <footer className="modal-footer">
             {demanda ? (

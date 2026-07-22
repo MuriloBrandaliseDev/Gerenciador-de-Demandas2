@@ -1,4 +1,4 @@
-import type { Demanda, DemandaInput, Filters } from './types';
+import type { Anexo, Demanda, DemandaInput, Filters } from './types';
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(url, {
@@ -58,5 +58,32 @@ export const api = {
   },
   remove(id: string) {
     return request<void>(`/api/demandas/${id}`, { method: 'DELETE' });
+  },
+  listAnexos(demandaId: string) {
+    return request<Anexo[]>(`/api/demandas/${demandaId}/anexos`);
+  },
+  async uploadAnexos(demandaId: string, files: File[]) {
+    const form = new FormData();
+    for (const file of files) form.append('arquivos', file);
+    const res = await fetch(`/api/demandas/${demandaId}/anexos`, {
+      method: 'POST',
+      body: form,
+    });
+    if (!res.ok) {
+      let message = 'Erro no upload';
+      try {
+        const data = await res.json();
+        message = data.error || message;
+      } catch {
+        /* ignore */
+      }
+      throw new Error(message);
+    }
+    return res.json() as Promise<Anexo[]>;
+  },
+  removeAnexo(demandaId: string, anexoId: string) {
+    return request<void>(`/api/demandas/${demandaId}/anexos/${anexoId}`, {
+      method: 'DELETE',
+    });
   },
 };
