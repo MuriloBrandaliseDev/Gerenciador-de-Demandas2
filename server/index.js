@@ -13,7 +13,11 @@ app.use(cors());
 app.use(express.json({ limit: '2mb' }));
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true });
+  res.json({
+    ok: true,
+    version: '1.1.0',
+    features: { anexos: true },
+  });
 });
 
 app.use('/api/demandas', demandasRouter);

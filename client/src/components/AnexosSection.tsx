@@ -123,7 +123,14 @@ export const AnexosSection = forwardRef<AnexosHandle, AnexosSectionProps>(
         const created = await api.uploadAnexos(id, files);
         setAnexos((prev) => [...prev, ...created]);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Falha no upload');
+        const msg = err instanceof Error ? err.message : 'Falha no upload';
+        if (msg.includes('404')) {
+          setError(
+            'Servidor desatualizado (upload 404). Na VM rode: bash scripts/update-from-git.sh'
+          );
+        } else {
+          setError(msg);
+        }
         throw err;
       } finally {
         setUploading(false);
@@ -144,7 +151,14 @@ export const AnexosSection = forwardRef<AnexosHandle, AnexosSectionProps>(
           setPending([]);
           return created.length;
         } catch (err) {
-          setError(err instanceof Error ? err.message : 'Falha no upload dos anexos');
+          const msg = err instanceof Error ? err.message : 'Falha no upload dos anexos';
+          if (msg.includes('404')) {
+            setError(
+              'Servidor desatualizado (upload 404). Na VM rode: bash scripts/update-from-git.sh'
+            );
+          } else {
+            setError(msg);
+          }
           throw err;
         } finally {
           setUploading(false);

@@ -176,66 +176,71 @@ router.get('/:id/anexos', (req, res) => {
   res.json(rows.map(rowToAnexo));
 });
 
-router.post('/:id/anexos', (req, res) => {
-  const existing = db.prepare('SELECT id FROM demandas WHERE id = ?').get(req.params.id);
-  if (!existing) return res.status(404).json({ error: 'Demanda não encontrada' });
-
-  upload.array('arquivos', 10)(req, res, (err) => {
-    if (err) {
-      return res.status(400).json({ error: err.message || 'Falha no upload' });
-    }
-
-    const files = req.files || [];
-    if (!files.length) {
-      return res.status(400).json({ error: 'Nenhum arquivo enviado' });
-    }
-
-    const now = new Date().toISOString();
-    const created = [];
-
-    try {
-      withTransaction(() => {
-        const insert = db.prepare(`
-          INSERT INTO anexos (id, demanda_id, nome_original, nome_arquivo, mime_type, tamanho, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?)
-        `);
-        for (const file of files) {
-          const id = uuidv4();
-          insert.run(
-            id,
-            req.params.id,
-            file.originalname || file.filename,
-            file.filename,
-            file.mimetype,
-            file.size || 0,
-            now
-          );
-          created.push(
-            rowToAnexo({
-              id,
-              demanda_id: req.params.id,
-              nome_original: file.originalname || file.filename,
-              nome_arquivo: file.filename,
-              mime_type: file.mimetype,
-              tamanho: file.size || 0,
-              created_at: now,
-            })
-          );
-        }
-        db.prepare('UPDATE demandas SET updated_at = ? WHERE id = ?').run(now, req.params.id);
-      });
-    } catch (e) {
-      for (const file of files) {
-        const full = path.join(uploadsDir, file.filename);
-        if (fs.existsSync(full)) fs.unlinkSync(full);
+router.post(
+  '/:id/anexos',
+  (req, res, next) => {
+    const existing = db.prepare('SELECT id FROM demandas WHERE id = ?').get(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Demanda não encontrada' });
+    next();
+  },
+  (req, res) => {
+    upload.array('arquivos', 10)(req, res, (err) => {
+      if (err) {
+        return res.status(400).json({ error: err.message || 'Falha no upload' });
       }
-      console.error(e);
-      return res.status(500).json({ error: 'Erro ao salvar anexos' });
-    }
 
-    res.status(201).json(created);
-  });
-});
+      const files = req.files || [];
+      if (!files.length) {
+        return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+      }
+
+      const now = new Date().toISOString();
+      const created = [];
+
+      try {
+        withTransaction(() => {
+          const insert = db.prepare(`
+            INSERT INTO anexos (id, demanda_id, nome_original, nome_arquivo, mime_type, tamanho, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+          `);
+          for (const file of files) {
+            const id = uuidv4();
+            insert.run(
+              id,
+              req.params.id,
+              file.originalname || file.filename,
+              file.filename,
+              file.mimetype,
+              file.size || 0,
+              now
+            );
+            created.push(
+              rowToAnexo({
+                id,
+                demanda_id: req.params.id,
+                nome_original: file.originalname || file.filename,
+                nome_arquivo: file.filename,
+                mime_type: file.mimetype,
+                tamanho: file.size || 0,
+                created_at: now,
+              })
+            );
+          }
+          db.prepare('UPDATE demandas SET updated_at = ? WHERE id = ?').run(now, req.params.id);
+        });
+      } catch (e) {
+        for (const file of files) {
+          const full = path.join(uploadsDir, file.filename);
+          if (fs.existsSync(full)) fs.unlinkSync(full);
+        }
+        console.error(e);
+        return res.status(500).json({ error: 'Erro ao salvar anexos' });
+      }
+
+      res.status(201).json(created);
+    });
+  }
+);
 
 router.delete('/:id/anexos/:anexoId', (req, res) => {
   const row = db

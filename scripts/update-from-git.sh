@@ -1,27 +1,36 @@
 #!/usr/bin/env bash
-# Na VM: atualiza o sistema via git (sem tocar no banco).
+# Atualiza o sistema via git (sem tocar no banco).
 # Uso: bash scripts/update-from-git.sh
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
+echo "→ Pasta do app: $ROOT"
 echo "→ git pull..."
-git pull --ff-only
+git fetch --all --prune
+git pull --ff-only origin main || git pull --ff-only
 
-echo "→ npm install..."
+echo "→ npm install (root + client)..."
 npm install
+npm install --prefix client
 
 echo "→ build..."
 npm run build
 
-if systemctl is-enabled gerenciador-demandas >/dev/null 2>&1; then
-  echo "→ restart serviço..."
-  sudo systemctl restart gerenciador-demandas
-  sudo systemctl is-active gerenciador-demandas
+echo "→ reinstalar/reiniciar serviço (garante WorkingDirectory correto)..."
+if [[ -f scripts/install-service.sh ]]; then
+  sudo bash scripts/install-service.sh
 else
-  echo "Serviço systemd ainda não instalado. Rode: sudo bash scripts/install-service.sh"
+  sudo systemctl restart gerenciador-demandas
 fi
 
+sleep 1
+echo "→ health check:"
+curl -sS "http://127.0.0.1:3030/api/health" || true
 echo ""
-echo "Atualizado. Banco permanece em ~/.local/share/gerenciador-demandas/"
+sudo systemctl is-active gerenciador-demandas
+
+echo ""
+echo "Atualizado. Se health.features.anexos != true, o serviço ainda aponta pasta errada."
+echo "Banco: ~/.local/share/gerenciador-demandas/"
