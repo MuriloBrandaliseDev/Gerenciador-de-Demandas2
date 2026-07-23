@@ -29,12 +29,17 @@ DATA_DIR="${USER_HOME}/.local/share/gerenciador-demandas"
 mkdir -p "$DATA_DIR"
 chown -R "${USER_NAME}:${USER_NAME}" "$DATA_DIR" 2>/dev/null || true
 
+# systemd não lida bem com espaços em WorkingDirectory — usa symlink sem espaços
+APP_LINK="${USER_HOME}/gerenciador-demandas"
+ln -sfn "$ROOT" "$APP_LINK"
+chown -h "${USER_NAME}:${USER_NAME}" "$APP_LINK" 2>/dev/null || true
+
 echo "Usando Node $NODE_VER em $NODE_BIN (serviço como $USER_NAME)"
-echo "Pasta do app: $ROOT"
+echo "Pasta real: $ROOT"
+echo "Link:       $APP_LINK"
 
 UNIT_PATH="/etc/systemd/system/${SERVICE_NAME}.service"
 
-# Aspas obrigatórias: "Gerenciador de Demandas" tem espaços
 cat > "$UNIT_PATH" <<EOF
 [Unit]
 Description=Gerenciador de Demandas
@@ -44,11 +49,11 @@ Wants=network-online.target
 [Service]
 Type=simple
 User=${USER_NAME}
-WorkingDirectory="${ROOT}"
+WorkingDirectory=${APP_LINK}
 Environment=PORT=3030
 Environment=NODE_ENV=production
-Environment="DATA_DIR=${DATA_DIR}"
-ExecStart=${NODE_BIN} "${ROOT}/server/index.js"
+Environment=DATA_DIR=${DATA_DIR}
+ExecStart=${NODE_BIN} ${APP_LINK}/server/index.js
 Restart=always
 RestartSec=3
 
@@ -66,12 +71,12 @@ IP="$(hostname -I 2>/dev/null | awk '{print $1}')"
 echo ""
 if systemctl is-active --quiet "${SERVICE_NAME}"; then
   echo "OK — serviço ativo."
+  curl -sS "http://127.0.0.1:3030/api/health" || true
+  echo ""
 else
-  echo "FALHOU — veja: journalctl -u ${SERVICE_NAME} -n 30 --no-pager"
+  echo "FALHOU — veja: journalctl -u ${SERVICE_NAME} -n 40 --no-pager"
 fi
 echo "Na VM:     http://localhost:3030"
 if [[ -n "$IP" ]]; then
   echo "No Chrome: http://${IP}:3030"
 fi
-echo ""
-echo "curl -s http://127.0.0.1:3030/api/health"
