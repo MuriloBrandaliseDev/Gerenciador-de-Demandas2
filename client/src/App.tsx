@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Menu, Plus, LayoutGrid } from 'lucide-react';
+import { Menu, Plus, LayoutGrid, FileBarChart2 } from 'lucide-react';
 import { api } from './api';
 import type { Demanda, DemandaInput, Filters, Status } from './types';
 import { EMPTY_FILTERS } from './types';
@@ -7,6 +7,7 @@ import { Sidebar } from './components/Sidebar';
 import { KanbanBoard } from './components/KanbanBoard';
 import { DemandaModal } from './components/DemandaModal';
 import { FiltersPopover } from './components/FiltersPopover';
+import { ReportsModal } from './components/ReportsModal';
 import { ToastStack, type ToastItem, type ToastKind } from './components/Toast';
 import './styles/index.css';
 
@@ -21,6 +22,7 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [reportsOpen, setReportsOpen] = useState(false);
   const [editing, setEditing] = useState<Demanda | null>(null);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
@@ -158,6 +160,14 @@ export default function App() {
               filters={filters}
               onChange={setFilters}
             />
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => setReportsOpen(true)}
+            >
+              <FileBarChart2 size={15} />
+              Relatórios
+            </button>
             <button type="button" className="btn btn-primary" onClick={openNew}>
               <Plus size={15} />
               Nova
@@ -194,6 +204,14 @@ export default function App() {
           );
           setEditing((prev) => (prev?.id === id ? { ...prev, anexosCount: count } : prev));
         }}
+      />
+
+      <ReportsModal
+        open={reportsOpen}
+        onClose={() => setReportsOpen(false)}
+        filters={filters}
+        demandasFiltradas={demandas}
+        onToast={toast}
       />
 
       <ToastStack items={toasts} onDismiss={dismissToast} />

@@ -28,7 +28,7 @@ export function Sidebar({ open, onClose, onNew }: SidebarProps) {
 
         <button type="button" className="nav-item active">
           <PanelLeft />
-          Board
+          <span className="nav-label">Board</span>
         </button>
 
         <button
@@ -40,12 +40,12 @@ export function Sidebar({ open, onClose, onNew }: SidebarProps) {
           }}
         >
           <Plus />
-          Nova demanda
+          <span className="nav-label">Nova demanda</span>
         </button>
 
         <div className="sidebar-footer">
           <Server size={12} />
-          Sem login · dados locais
+          <span className="nav-label">Sem login · dados locais</span>
         </div>
       </aside>
     </>

@@ -7,7 +7,7 @@ import db, { uploadsDir } from '../db.js';
 
 const router = Router();
 
-const STATUSES = ['novo', 'aprovado', 'em_andamento', 'em_testes', 'finalizado'];
+const STATUSES = ['novo', 'aprovado', 'em_andamento', 'em_testes', 'finalizado', 'falta_enviar'];
 
 const ALLOWED_MIME = new Set([
   'image/jpeg',

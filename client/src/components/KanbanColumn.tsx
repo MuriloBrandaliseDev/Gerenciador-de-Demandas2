@@ -17,6 +17,7 @@ const DOT_COLORS: Record<Status, string> = {
   em_andamento: '#3b82f6',
   em_testes: '#818cf8',
   finalizado: '#22c55e',
+  falta_enviar: '#f59e0b',
 };
 
 export function KanbanColumn({ status, items, onOpen }: KanbanColumnProps) {

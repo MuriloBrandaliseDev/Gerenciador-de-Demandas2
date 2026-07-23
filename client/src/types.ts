@@ -3,7 +3,8 @@ export type Status =
   | 'aprovado'
   | 'em_andamento'
   | 'em_testes'
-  | 'finalizado';
+  | 'finalizado'
+  | 'falta_enviar';
 
 export interface Demanda {
   id: string;
@@ -50,15 +51,16 @@ export const STATUS_ORDER: Status[] = [
   'aprovado',
   'em_andamento',
   'em_testes',
+  'falta_enviar',
   'finalizado',
 ];
-
 export const STATUS_LABELS: Record<Status, string> = {
   novo: 'Novo',
   aprovado: 'Aprovado',
   em_andamento: 'Em andamento',
   em_testes: 'Em testes',
   finalizado: 'Finalizado',
+  falta_enviar: 'Falta enviar',
 };
 
 export const EMPTY_FILTERS: Filters = {
